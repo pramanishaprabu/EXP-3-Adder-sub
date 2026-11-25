@@ -19,57 +19,70 @@ half_add_sub_tb.v	Stimulus and VCD generation
 
 ### Verilog Program
 ```
-module basic_gates (
-    input  wire a,
-    input  wire b,
-    output wire y_and,
-    output wire y_or,
-    output wire y_not
-);
 
-    assign y_and = a & b;   // AND gate
-    assign y_or  = a | b;   // OR gate
-    assign y_not = ~a;      // NOT gate (inverter)
-
-endmodule
 ```
 ### Testbench Program
 ```
-module tb2;
-
-    reg a, b;
-    wire y_and, y_or, y_not;
-
-    // Instantiate the design under test (DUT)
-    basic_gates uut (
-        .a(a),
-        .b(b),
-        .y_and(y_and),
-        .y_or(y_or),
-        .y_not(y_not)
-    );
-
-    initial begin
-        // ---- VCD dump setup ----
-        $dumpfile("basic_gates.vcd");   // name of the VCD file to be generated
-        $dumpvars(0, tb2);               // dump all signals in this testbench hierarchy
-
-        // ---- Apply all 4 input combinations ----
-        $monitor("Time=%0t a=%b b=%b | AND=%b OR=%b NOT(a)=%b", $time, a, b, y_and, y_or, y_not);
-
-        a = 0; b = 0; #10;
-        a = 0; b = 1; #10;
-        a = 1; b = 0; #10;
-        a = 1; b = 1; #10;
-
-        #10 $finish;
-#10;
-    end
-
+module half_adder (
+    input  wire A,
+    input  wire B,
+    output wire Sum,
+    output wire Carry
+);
+    assign Sum   = A ^ B;   // XOR
+    assign Carry = A & B;   // AND
+endmodule
+ 
+module half_subtractor (
+    input  wire A,
+    input  wire B,
+    output wire Diff,
+    output wire Borrow
+);
+    assign Diff   = A ^ B;      // XOR
+    assign Borrow = (~A) & B;  // A' . B
 endmodule
 ```
 ### Truth Table
-
+```
+module tb3;
+    reg A, B;
+    wire Sum, Carry;
+    wire Diff, Borrow;
+ 
+    // Instantiate the Half Adder
+    half_adder ha_uut (
+        .A(A),
+        .B(B),
+        .Sum(Sum),
+        .Carry(Carry)
+    );
+ 
+    // Instantiate the Half Subtractor
+    half_subtractor hs_uut (
+        .A(A),
+        .B(B),
+        .Diff(Diff),
+        .Borrow(Borrow)
+    );
+ 
+    initial begin
+        // ---- VCD dump setup ----
+        $dumpfile("half_add_sub.vcd");   // name of the VCD file to be generated
+        $dumpvars(0, tb3);                // dump all signals in this testbench hierarchy
+ 
+        // ---- Apply all 4 input combinations ----
+        $monitor("Time=%0t A=%b B=%b | Sum=%b Carry=%b | Diff=%b Borrow=%b",
+                   $time, A, B, Sum, Carry, Diff, Borrow);
+        A = 0; B = 0; #10;
+        A = 0; B = 1; #10;
+        A = 1; B = 0; #10;
+        A = 1; B = 1; #10;
+ 
+        #10 $finish;
+    end
+endmodule
+```
 
 <img width="645" height="87" alt="TT3" src="https://github.com/user-attachments/assets/37e33bb3-d647-45d5-b610-c255d7e41b8b" />
 
